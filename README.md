@@ -1,6 +1,8 @@
 tik
 ====
 
+[![Build Status](https://travis-ci.org/jarofghosts/tik.png?branch=master)](https://travis-ci.org/jarofghosts/tik)
+
 ## install
 
 `npm install -g tik`
