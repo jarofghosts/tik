@@ -38,12 +38,8 @@ Tik.prototype.listAll = function () {
   function closeStream() { tr.queue(null); }
 };
 
-Tik.prototype.listKeys = function () {
+Tik.prototype.keyStream = function () {
   return this.db.createKeyStream();
-};
-
-Tik.prototype.remove = function (keyName) {
-  return this.db.del(keyName);
 };
 
 Tik.prototype.readStream = function () {
@@ -75,22 +71,45 @@ if (isCli) {
   c
     .command('rm <key>')
     .description('remove key from database')
-    .action(function (key) {
-      if (!key) c.help();
-      
+    .action(function (keyName) {
+      if (!keyName) c.help();
+      var delStream = new Tik().deleteStream();
+      delStream.write({ key: keyName });
+      delStream.end();
     });
   c
     .command('ls')
     .description('list all items')
     .action(function () {
+      new Tik().listAll().pipe(process.stdout);
      });
+  c
+    .command('lskeys')
+    .description('list all keys')
+    .action(function () {
+      new Tik().keyStream().pipe(process.stdout);
+    });
+
   c.parse(process.argv);
 
   if (!c.args.length) c.help();
-  if (c.args.length === 1) return getKey(c.args[0]);
-  var keyName = c.args.shift(),
-      keyValue = c.args.join(' ');
-  return setKey(keyName, keyValue);
+  if (c.args.length === 1) {
+
+    var read = new Tik().readStream();
+
+    read.pipe(process.stdout);
+
+    read.push(c.args[0]);
+    read.push(null);
+
+  } else {
+
+    var keyName = c.args.shift(),
+        keyValue = c.args.join(' '),
+        write = new Tik().writeStream();
+
+    write.write({ key: keyName, value: keyValue });
+    write.end();
 
 }
 
