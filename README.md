@@ -21,9 +21,9 @@ list all keys and values
 
 list all keys
 
-#### tik rm <key>
+#### tik rm key [key2 ..]
 
-remove `key` from db
+remove `key` from db, accepts a list of keys separated by space
 
 ## as a module
 

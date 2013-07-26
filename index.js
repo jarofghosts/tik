@@ -82,15 +82,19 @@ Tik.prototype.deleteStream = function () {
 
 if (isCli) {
   c
-    .version('0.0.1')
-    .option('');
+    .version('0.0.2');
   c
-    .command('rm <key>')
+    .command('rm <key> [key2 ..]')
     .description('remove key from database')
-    .action(function (keyName) {
-      if (!keyName) c.help();
-      var delStream = new Tik().deleteStream();
-      delStream.write({ key: keyName });
+    .action(function () {
+      var delStream = new Tik().deleteStream(),
+          args = Array.prototype.slice.call(arguments, [0, -1]),
+          i = 0,
+          l = args.length;
+
+      for (; i < l; ++i) {
+        delStream.write({ key: args[i] });
+      }
       delStream.end();
     });
   c
