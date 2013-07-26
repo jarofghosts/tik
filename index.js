@@ -56,7 +56,7 @@ Tik.prototype.keyStream = function () {
 };
 
 Tik.prototype.readStream = function () {
-  var tr = through(write),
+  var tr = through(write, function () {}),
       db = this.db;
 
   return tr;
@@ -107,9 +107,8 @@ if (isCli) {
     .command('*')
     .action(function (stuff) {
 
-      if (c.args.length === 1) {
+      if (c.args.length === 2) {
 
-        console.dir(c.args)
         var read = new Tik().readStream(),
             rs = stream.Readable();
 
