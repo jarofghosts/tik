@@ -6,10 +6,21 @@ var c = require('commander'),
     levelup = require('levelup'),
     path = require('path'),
     fs = require('fs'),
+    stream = require('stream'),
     dir = path.resolve(process.env.HOME || process.env.USERPROFILE, '.tik'),
     isCli = (require.main === module);
 
 if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+
+function newlineify() {
+  var tr = through(write);
+
+  return tr;
+
+  function write(buf) {
+    this.queue(buf.toString() + '\n');
+  }
+}
 
 function Tik(settings) {
 
@@ -21,15 +32,17 @@ function Tik(settings) {
 }
 
 Tik.prototype.listAll = function () {
-  var tr = through();
+  var tr = through(),
+      db = this.db;
 
   process.nextTick(go);
   return tr;
 
   function go() {
-    this.db.createReadStream()
+    db.createReadStream()
       .on('data', function (data) {
-        if (value) this.queue([color.green(data.key + ':'), data.value].join(' '));
+        if (!data.key || !data.value) return;
+        tr.queue([color.green(data.key + ':'), data.value].join(' '));
       })
       .on('end', closeStream)
       .on('close', closeStream);
@@ -67,7 +80,8 @@ Tik.prototype.deleteStream = function () {
 
 if (isCli) {
   c
-    .version('0.0.0');
+    .version('0.0.0')
+    .option('');
   c
     .command('rm <key>')
     .description('remove key from database')
@@ -81,35 +95,45 @@ if (isCli) {
     .command('ls')
     .description('list all items')
     .action(function () {
-      new Tik().listAll().pipe(process.stdout);
+      new Tik().listAll().pipe(newlineify()).pipe(process.stdout);
      });
   c
     .command('lskeys')
     .description('list all keys')
     .action(function () {
-      new Tik().keyStream().pipe(process.stdout);
+      new Tik().keyStream().pipe(newlineify()).pipe(process.stdout);
     });
+  c
+    .command('*')
+    .action(function (stuff) {
 
+      if (c.args.length === 1) {
+
+        console.dir(c.args)
+        var read = new Tik().readStream(),
+            rs = stream.Readable();
+
+        rs.push(c.args[0]);
+        rs.push(null);
+
+        rs.pipe(read).pipe(newlineify()).pipe(process.stdout);
+
+      } else {
+
+        c.args.pop();
+
+        var keyName = c.args.shift(),
+            keyValue = c.args.join(' '),
+            write = new Tik().writeStream();
+
+        write.write({ key: keyName, value: keyValue });
+        write.end();
+
+      }
+
+    });
   c.parse(process.argv);
-
   if (!c.args.length) c.help();
-  if (c.args.length === 1) {
-
-    var read = new Tik().readStream();
-
-    read.pipe(process.stdout);
-
-    read.push(c.args[0]);
-    read.push(null);
-
-  } else {
-
-    var keyName = c.args.shift(),
-        keyValue = c.args.join(' '),
-        write = new Tik().writeStream();
-
-    write.write({ key: keyName, value: keyValue });
-    write.end();
 
 }
 
