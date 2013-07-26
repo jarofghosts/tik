@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "description": "store stuff or get stuff",
   "main": "index.js",
+  "bin": {
+    "tik": "./index.js"
+  },
+  "preferGlobal": true,
   "directories": {
     "test": "test"
   },
