@@ -12,6 +12,8 @@ var c = require('commander'),
 
 if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
+module.exports.Tik = Tik;
+
 function newlineify() {
   var tr = through(write);
 
