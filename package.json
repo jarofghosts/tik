@@ -23,5 +23,9 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/jarofghosts/tik/issues"
+  },
+  "dependencies": {
+    "levelup": "~0.12.0",
+    "leveldown": "~0.6.2"
   }
 }
