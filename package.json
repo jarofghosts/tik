@@ -34,6 +34,5 @@
     "commander": "~2.0.0",
     "bash-color": "0.0.3",
     "through": "~2.3.4",
-    "event-stream": "~3.0.16"
   }
 }
