@@ -1,0 +1,27 @@
+{
+  "name": "tik",
+  "version": "0.0.0",
+  "description": "store stuff or get stuff",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jarofghosts/tik.git"
+  },
+  "keywords": [
+    "key",
+    "value",
+    "store",
+    "cli"
+  ],
+  "author": "jesse keane",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jarofghosts/tik/issues"
+  }
+}
