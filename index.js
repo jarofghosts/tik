@@ -82,7 +82,7 @@ Tik.prototype.deleteStream = function () {
 
 if (isCli) {
   c
-    .version('0.0.0')
+    .version('0.0.1')
     .option('');
   c
     .command('rm <key>')
