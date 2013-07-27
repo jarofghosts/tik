@@ -3,6 +3,8 @@ tik
 
 [![Build Status](https://travis-ci.org/jarofghosts/tik.png?branch=master)](https://travis-ci.org/jarofghosts/tik)
 
+A command line key/value store based on [LevelDB](https://code.google.com/p/leveldb/)
+
 ## install
 
 `npm install -g tik`
