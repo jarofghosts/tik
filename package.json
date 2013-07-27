@@ -33,6 +33,7 @@
     "leveldown": "~0.6.2",
     "commander": "~2.0.0",
     "bash-color": "0.0.3",
-    "through": "~2.3.4"
+    "through": "~2.3.4",
+    "appendage": "0.0.0"
   }
 }

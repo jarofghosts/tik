@@ -4,6 +4,7 @@ var c = require('commander'),
     through = require('through'),
     color = require('bash-color'),
     levelup = require('levelup'),
+    appendage = require('appendage'),
     path = require('path'),
     fs = require('fs'),
     stream = require('stream'),
@@ -13,16 +14,6 @@ var c = require('commander'),
 if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
 module.exports.Tik = Tik;
-
-function newlineify() {
-  var tr = through(write);
-
-  return tr;
-
-  function write(buf) {
-    this.queue(buf.toString() + '\n');
-  }
-}
 
 function Tik(settings) {
 
@@ -101,13 +92,13 @@ if (isCli) {
     .command('ls')
     .description('list all items')
     .action(function () {
-      new Tik().listAll().pipe(newlineify()).pipe(process.stdout);
+      new Tik().listAll().pipe(appendage({ after: '\n' })).pipe(process.stdout);
      });
   c
     .command('lskeys')
     .description('list all keys')
     .action(function () {
-      new Tik().keyStream().pipe(newlineify()).pipe(process.stdout);
+      new Tik().keyStream().pipe(appendage({ after: '\n' })).pipe(process.stdout);
     });
   c
     .command('*')
@@ -121,7 +112,7 @@ if (isCli) {
         rs.push(c.args[0]);
         rs.push(null);
 
-        rs.pipe(read).pipe(newlineify()).pipe(process.stdout);
+        rs.pipe(read).pipe(appendage({ after: '\n' })).pipe(process.stdout);
 
       } else {
 
