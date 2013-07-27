@@ -41,7 +41,6 @@ function testKeyStream() {
     if (entry == 2) clearTimeout(bad);
     assert.ok(data == 'a' || data == 'b' || data == 'c');
     entry--;
-    console.log(data)
     next();
   }
 
