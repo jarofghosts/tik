@@ -33,6 +33,21 @@ remove `key` from db, accepts a list of keys separated by space
 
 im not sure why you would want to, but it's possible..
 
+```js
+var Tik = require('tik').Tik,
+    tik = new Tik();
+
+tik.listAll() // read stream of all key: value
+
+tik.keyStream() // read stream of all keys
+
+tik.readStream() // feed this stream key names and it will pump out values
+
+tik.writeStream() // feed it objects like { key: keyName, value: valueName }
+
+tik.deleteStream() // throw a key name in here and watch it disappear
+```
+
 ## license
 
 MIT
