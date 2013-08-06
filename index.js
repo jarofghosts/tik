@@ -73,7 +73,7 @@ Tik.prototype.deleteStream = function () {
 
 if (isCli) {
   c
-    .version('0.0.3');
+    .version('0.0.4');
   c
     .command('rm <key> [key2 ..]')
     .description('remove key from database')

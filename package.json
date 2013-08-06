@@ -1,6 +1,6 @@
 {
   "name": "tik",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "command line key/value store",
   "main": "index.js",
   "bin": {
