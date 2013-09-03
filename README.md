@@ -15,6 +15,10 @@ A command line key/value store based on [LevelDB](https://code.google.com/p/leve
 
 retrieve `key` value if no `newvalue` specified, or set the value of `key` to `newvalue` if it is.
 
+## options
+
++ `-d <dir>` or `--database <dir>` - Use LevelDB from `<dir>` instead of default.
+
 ## additional commands
 
 #### tik ls
