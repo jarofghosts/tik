@@ -19,7 +19,7 @@ function Tik(settings) {
 
   this.settings = settings || {};
   this.settings.db = this.settings.db || dir + '/db';
-  this.db = levelup(this.settings.db);
+  this.db = levelup(path.normalize(this.settings.db));
 
   return this;
 }
@@ -73,7 +73,8 @@ Tik.prototype.deleteStream = function () {
 
 if (isCli) {
   c
-    .version('0.0.4');
+    .version('0.0.4')
+    .option('-d, --database <databasedir>', 'use specific leveldb')
   c
     .command('rm <key> [key2 ..]')
     .description('remove key from database')
@@ -92,13 +93,13 @@ if (isCli) {
     .command('ls')
     .description('list all items')
     .action(function () {
-      new Tik().listAll().pipe(appendage({ after: '\n' })).pipe(process.stdout);
+      new Tik({ db: c.database }).listAll().pipe(appendage({ after: '\n' })).pipe(process.stdout);
      });
   c
     .command('lskeys')
     .description('list all keys')
     .action(function () {
-      new Tik().keyStream().pipe(appendage({ after: '\n' })).pipe(process.stdout);
+      new Tik({ db: c.database }).keyStream().pipe(appendage({ after: '\n' })).pipe(process.stdout);
     });
   c
     .command('*')
@@ -106,7 +107,7 @@ if (isCli) {
 
       if (c.args.length === 2) {
 
-        var read = new Tik().readStream(),
+        var read = new Tik({ db: c.database }).readStream(),
             rs = stream.Readable();
 
         rs.push(c.args[0]);
@@ -120,7 +121,7 @@ if (isCli) {
 
         var keyName = c.args.shift(),
             keyValue = c.args.join(' '),
-            write = new Tik().writeStream();
+            write = new Tik({ db: c.database }).writeStream();
 
         write.write({ key: keyName, value: keyValue });
         write.end();
