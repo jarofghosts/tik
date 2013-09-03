@@ -73,7 +73,7 @@ Tik.prototype.deleteStream = function () {
 
 if (isCli) {
   c
-    .version('0.0.4')
+    .version('0.0.5')
     .option('-d, --database <databasedir>', 'use specific leveldb')
   c
     .command('rm <key> [key2 ..]')
