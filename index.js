@@ -79,7 +79,7 @@ if (isCli) {
     .command('rm <key> [key2 ..]')
     .description('remove key from database')
     .action(function () {
-      var delStream = new Tik().deleteStream(),
+      var delStream = new Tik({ db: c.database }).deleteStream(),
           args = Array.prototype.slice.call(arguments, [0, -1]),
           i = 0,
           l = args.length;
