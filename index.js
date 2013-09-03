@@ -14,8 +14,11 @@ var c = require('commander'),
 if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
 module.exports.Tik = Tik;
+module.exports.createTik = createTik;
 
 function Tik(settings) {
+  
+  if (!(this instanceof Tik)) return new Tik(settings);
 
   this.settings = settings || {};
   this.settings.db = this.settings.db || dir + '/db';
@@ -71,9 +74,13 @@ Tik.prototype.deleteStream = function () {
   return this.db.createWriteStream({ type: 'del' });
 };
 
+function createTik(settings) {
+  return new Tik(settings);
+}
+
 if (isCli) {
   c
-    .version('0.0.5')
+    .version('0.0.6')
     .option('-d, --database <databasedir>', 'use specific leveldb')
   c
     .command('rm <key> [key2 ..]')
