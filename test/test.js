@@ -27,7 +27,7 @@ ws._write = function (data, enc, next) {
   data = data.toString();
   assert.ok(data == 1 || data == 2 || data == 3);
   entry++;
-  if (entry == 4) testKeyStream();
+  if (entry == 4) console.log('test');//testKeyStream();
   next();
 };
 
