@@ -38,7 +38,10 @@ function testKeyStream() {
 
   ws2._write = function (data, enc, next) {
     data = data.toString();
-    if (entry == 2) clearTimeout(bad);
+    if (entry == 2) {
+      clearTimeout(bad);
+      testDeleteStream();
+    }
     assert.ok(data == 'a' || data == 'b' || data == 'c');
     entry--;
     next();
@@ -46,4 +49,15 @@ function testKeyStream() {
 
   tik.keyStream().pipe(ws2);
 }
+function testDeleteStream() {
+  var ws3 = stream.Writable();
+  tds.write({ key: 'a' });
+  tds.write({ key: 'b' });
+  tds.write({ key: 'c' });
+  ws3._write = function (data, enc, next) {
+    assert.ok(data == null);
+    next();
+  };
 
+  tds.pipe(ws3);
+}
