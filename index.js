@@ -60,7 +60,7 @@ Tik.prototype.readStream = function () {
   function write(buf) {
     var keyName = buf.toString();
     db.get(keyName, function (err, data) {
-      if (err) tr.queue(undefined);
+      if (err) tr.queue(null);
       if (data) tr.queue(data);
     });
   }
