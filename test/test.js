@@ -50,14 +50,22 @@ function testKeyStream() {
   tik.keyStream().pipe(ws2);
 }
 function testDeleteStream() {
+  var rs2 = stream.Readable({ objectMode: true }); 
+  rs2._read = function () {
+    rs2.push({ key: 'a' });
+    rs2.push({ key: 'b' });
+    rs2.push({ key: 'c' });
+    rs2.push(null);
+  };
+
+  var check = rs2.pipe(tds);
+  check.on('end', checkDeleted);
+}
+function checkDeleted() {
   var ws3 = stream.Writable();
-  tds.write({ key: 'a' });
-  tds.write({ key: 'b' });
-  tds.write({ key: 'c' });
   ws3._write = function (data, enc, next) {
     assert.ok(data == null);
     next();
   };
-
-  tds.pipe(ws3);
+  trs.pipe(ws3);
 }
