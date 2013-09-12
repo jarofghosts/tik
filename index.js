@@ -80,7 +80,7 @@ function createTik(settings) {
 
 if (isCli) {
   c
-    .version('0.0.6')
+    .version('0.0.7')
     .option('-d, --database <databasedir>', 'use specific leveldb')
   c
     .command('rm <key> [key2 ..]')
