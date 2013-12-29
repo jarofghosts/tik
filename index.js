@@ -3,6 +3,7 @@
 var c = require('commander'),
     through = require('through'),
     color = require('bash-color'),
+    package = require('./package.json'),
     levelup = require('levelup'),
     appendage = require('appendage'),
     path = require('path'),
@@ -48,7 +49,7 @@ Tik.prototype.listAll = function () {
   }
 
   function closeStream() { tr.queue(null) }
-};
+}
 
 Tik.prototype.keyStream = function () {
   return this.db.createKeyStream()
@@ -83,14 +84,14 @@ function createTik(settings) {
 
 if (isCli) {
   c
-    .version('0.0.7')
+    .version(package.version)
     .option('-d, --database <databasedir>', 'use specific leveldb')
   c
     .command('rm <key> [key2 ..]')
     .description('remove key from database')
     .action(function () {
       var delStream = new Tik({ db: c.database }).deleteStream(),
-          args = Array.prototype.slice.call(arguments, 0, -2),
+          args = [].slice.call(arguments, 0, -2),
           i = 0,
           l = args.length
       for (; i < l; ++i) {
@@ -102,20 +103,23 @@ if (isCli) {
     .command('ls')
     .description('list all items')
     .action(function () {
-      new Tik({ db: c.database }).listAll().pipe(appendage({ after: '\n' })).pipe(process.stdout)
+      new Tik({ db: c.database }).listAll()
+        .pipe(appendage({ after: '\n' }))
+        .pipe(process.stdout)
      })
   c
     .command('lskeys')
     .description('list all keys')
     .action(function () {
-      new Tik({ db: c.database }).keyStream().pipe(appendage({ after: '\n' })).pipe(process.stdout)
+      new Tik({ db: c.database }).keyStream()
+        .pipe(appendage({ after: '\n' }))
+        .pipe(process.stdout)
     })
   c
     .command('*')
     .action(function (stuff) {
 
       if (c.args.length === 2) {
-
         var read = new Tik({ db: c.database }).readStream(),
             rs = stream.Readable()
 
@@ -123,9 +127,7 @@ if (isCli) {
         rs.push(null)
 
         rs.pipe(read).pipe(appendage({ after: '\n' })).pipe(process.stdout)
-
       } else {
-
         c.args.pop()
 
         var keyName = c.args.shift(),
@@ -134,12 +136,9 @@ if (isCli) {
 
         write.write({ key: keyName, value: keyValue })
         write.end()
-
       }
 
     })
   c.parse(process.argv)
   if (!c.args.length) c.help()
-
 }
-
