@@ -4,7 +4,7 @@
   "description": "command line key/value store",
   "main": "index.js",
   "bin": {
-    "tik": "./index.js"
+    "tik": "./bin/tik.js"
   },
   "preferGlobal": true,
   "directories": {

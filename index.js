@@ -1,16 +1,11 @@
 #!/usr/bin/env node
 
-var c = require('commander'),
-    through = require('through'),
+var through = require('through'),
     color = require('bash-color'),
-    package = require('./package.json'),
     levelup = require('levelup'),
-    appendage = require('appendage'),
     path = require('path'),
     fs = require('fs'),
-    stream = require('stream'),
-    dir = path.resolve(process.env.HOME || process.env.USERPROFILE, '.tik'),
-    isCli = (require.main === module)
+    dir = path.resolve(process.env.HOME || process.env.USERPROFILE, '.tik')
 
 try {
   fs.mkdirSync(dir)
@@ -31,7 +26,7 @@ function Tik(settings) {
   return this
 }
 
-Tik.prototype.listAll = function () {
+Tik.prototype.listAll = function Tik$listAll() {
   var tr = through(),
       db = this.db
 
@@ -40,7 +35,7 @@ Tik.prototype.listAll = function () {
 
   function go() {
     db.createReadStream()
-      .on('data', function (data) {
+      .on('data', function ondata(data) {
         if (!data.key || !data.value) return
         tr.queue([color.green(data.key + ':'), data.value].join(' '))
       })
@@ -48,14 +43,16 @@ Tik.prototype.listAll = function () {
       .on('close', closeStream)
   }
 
-  function closeStream() { tr.queue(null) }
+  function closeStream() {
+    tr.queue(null)
+  }
 }
 
-Tik.prototype.keyStream = function () {
+Tik.prototype.keyStream = function Tik$keyStream() {
   return this.db.createKeyStream()
 }
 
-Tik.prototype.readStream = function () {
+Tik.prototype.readStream = function Tik$readStream() {
   var tr = through(write, function () {}),
       db = this.db
 
@@ -70,75 +67,14 @@ Tik.prototype.readStream = function () {
   }
 }
 
-Tik.prototype.writeStream = function () {
+Tik.prototype.writeStream = function Tik$writeStream() {
   return this.db.createWriteStream({ type: 'put' })
 }
 
-Tik.prototype.deleteStream = function () {
+Tik.prototype.deleteStream = function Tik$deleteStream() {
   return this.db.createWriteStream({ type: 'del' })
 }
 
 function createTik(settings) {
   return new Tik(settings)
-}
-
-if (isCli) {
-  c
-    .version(package.version)
-    .option('-d, --database <databasedir>', 'use specific leveldb')
-  c
-    .command('rm <key> [key2 ..]')
-    .description('remove key from database')
-    .action(function () {
-      var delStream = new Tik({ db: c.database }).deleteStream(),
-          args = [].slice.call(arguments, 0, -2),
-          i = 0,
-          l = args.length
-      for (; i < l; ++i) {
-        delStream.write({ key: args[i] })
-      }
-      delStream.end()
-    })
-  c
-    .command('ls')
-    .description('list all items')
-    .action(function () {
-      new Tik({ db: c.database }).listAll()
-        .pipe(appendage({ after: '\n' }))
-        .pipe(process.stdout)
-     })
-  c
-    .command('lskeys')
-    .description('list all keys')
-    .action(function () {
-      new Tik({ db: c.database }).keyStream()
-        .pipe(appendage({ after: '\n' }))
-        .pipe(process.stdout)
-    })
-  c
-    .command('*')
-    .action(function (stuff) {
-
-      if (c.args.length === 2) {
-        var read = new Tik({ db: c.database }).readStream(),
-            rs = stream.Readable()
-
-        rs.push(c.args[0])
-        rs.push(null)
-
-        rs.pipe(read).pipe(appendage({ after: '\n' })).pipe(process.stdout)
-      } else {
-        c.args.pop()
-
-        var keyName = c.args.shift(),
-            keyValue = c.args.join(' '),
-            write = new Tik({ db: c.database }).writeStream()
-
-        write.write({ key: keyName, value: keyValue })
-        write.end()
-      }
-
-    })
-  c.parse(process.argv)
-  if (!c.args.length) c.help()
 }
