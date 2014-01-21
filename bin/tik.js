@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var c = require('commander'),
     package = require('../package.json'),
     appendage = require('appendage'),
