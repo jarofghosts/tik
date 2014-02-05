@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 var through = require('through'),
     color = require('bash-color'),
     levelup = require('levelup'),
