@@ -1,9 +1,11 @@
-var through = require('through'),
-    color = require('bash-color'),
-    levelup = require('levelup'),
-    path = require('path'),
-    fs = require('fs'),
-    dir = path.resolve(process.env.HOME || process.env.USERPROFILE, '.tik')
+var path = require('path')
+  , fs = require('fs')
+
+var color = require('bash-color')
+  , through = require('through')
+  , levelup = require('levelup')
+
+var dir = path.resolve(process.env.HOME || process.env.USERPROFILE, '.tik')
 
 try {
   fs.mkdirSync(dir)
@@ -25,24 +27,16 @@ function Tik(settings) {
 }
 
 Tik.prototype.listAll = function Tik$listAll() {
-  var tr = through(),
-      db = this.db
+  var tr = through(format)
+    , db = this.db
 
-  process.nextTick(go)
+  db.createReadStream().pipe(tr)
+
   return tr
 
-  function go() {
-    db.createReadStream()
-      .on('data', function ondata(data) {
-        if (!data.key || !data.value) return
-        tr.queue([color.green(data.key + ':'), data.value].join(' '))
-      })
-      .on('end', closeStream)
-      .on('close', closeStream)
-  }
-
-  function closeStream() {
-    tr.queue(null)
+  function format(data) {
+    if(!data.key || !data.value) return
+    tr.queue(color.green(data.key + ':') + ' ' + data.value)
   }
 }
 
@@ -51,28 +45,31 @@ Tik.prototype.keyStream = function Tik$keyStream() {
 }
 
 Tik.prototype.readStream = function Tik$readStream() {
-  var tr = through(write, function () {}),
-      db = this.db
+  var tr = through(write, noop)
+    , db = this.db
 
   return tr
 
   function write(buf) {
-    var keyName = buf.toString()
-    db.get(keyName, function (err, data) {
-      if (err) tr.queue(null)
-      if (data) tr.queue(data)
+    var key_name = buf.toString()
+
+    db.get(key_name, function (err, data) {
+      if(err) tr.queue(null)
+      if(data) tr.queue(data)
     })
   }
 }
 
 Tik.prototype.writeStream = function Tik$writeStream() {
-  return this.db.createWriteStream({ type: 'put' })
+  return this.db.createWriteStream({type: 'put'})
 }
 
 Tik.prototype.deleteStream = function Tik$deleteStream() {
-  return this.db.createWriteStream({ type: 'del' })
+  return this.db.createWriteStream({type: 'del'})
 }
 
 function createTik(settings) {
   return new Tik(settings)
 }
+
+function noop(){}
