@@ -16,7 +16,6 @@ module.exports.Tik = Tik
 module.exports.createTik = createTik
 
 function Tik(settings) {
-  
   if (!(this instanceof Tik)) return new Tik(settings)
 
   this.settings = settings || {}
