@@ -1,6 +1,5 @@
 var assert = require('assert'),
-    Tik = require('../').Tik,
-    tik = new Tik({ db: __dirname + '/testdb' }),
+    tik = require('../')({ db: __dirname + '/testdb' }),
     stream = require('stream'),
     rs = new stream.Readable(),
     ws = new stream.Writable(),

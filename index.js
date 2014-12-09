@@ -12,12 +12,9 @@ try {
 } catch (e) {
 }
 
-module.exports.Tik = Tik
-module.exports.createTik = createTik
+module.exports = createTik
 
 function Tik(settings) {
-  if (!(this instanceof Tik)) return new Tik(settings)
-
   this.settings = settings || {}
   this.settings.db = this.settings.db || path.join(dir, 'db')
   this.db = levelup(path.normalize(this.settings.db))
@@ -26,16 +23,16 @@ function Tik(settings) {
 }
 
 Tik.prototype.listAll = function Tik$listAll() {
-  var tr = through(format)
-    , db = this.db
+  var stream = through(format)
 
-  db.createReadStream().pipe(tr)
+  this.db.createReadStream().pipe(stream)
 
-  return tr
+  return stream
 
   function format(data) {
     if(!data.key || !data.value) return
-    tr.queue(color.green(data.key + ':') + ' ' + data.value)
+
+    stream.queue(color.green(data.key + ':') + ' ' + data.value)
   }
 }
 
@@ -44,17 +41,17 @@ Tik.prototype.keyStream = function Tik$keyStream() {
 }
 
 Tik.prototype.readStream = function Tik$readStream() {
-  var tr = through(write, noop)
+  var stream = through(write, Function())
     , db = this.db
 
-  return tr
+  return stream
 
   function write(buf) {
     var key_name = buf.toString()
 
-    db.get(key_name, function (err, data) {
-      if(err) tr.queue(null)
-      if(data) tr.queue(data)
+    db.get(key_name, function(err, data) {
+      if(err) stream.queue(null)
+      if(data) stream.queue(data)
     })
   }
 }
@@ -70,5 +67,3 @@ Tik.prototype.deleteStream = function Tik$deleteStream() {
 function createTik(settings) {
   return new Tik(settings)
 }
-
-function noop(){}
