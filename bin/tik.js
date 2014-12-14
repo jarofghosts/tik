@@ -1,68 +1,37 @@
 #!/usr/bin/env node
+var path = require('path')
+  , fs = require('fs')
+
+var parseArgs = require('minimist')
+  , color = require('bash-color')
+  , level = require('levelup')
 
 var package = require('../package.json')
-  , appendage = require('appendage')
-  , stream = require('stream')
-  , Tik = require('../').Tik
-  , c = require('commander')
+  , tik = require('../')
 
-c
-  .version(package.version)
-  .option('-d, --database <databasedir>', 'use specific leveldb')
-c
-  .command('rm <key> [key2 ..]')
-  .description('remove key from database')
-  .action(function Tik$rm() {
-    var delStream = new Tik({db: c.database}).deleteStream()
-      , args = [].slice.call(arguments, 0, -2)
+var argv = parseArgs(process.argv.slice(2))
 
-    for(var i = 0, l = args.length; i < l; ++i) {
-      delStream.write({key: args[i]})
-    }
+if(argv.help || !argv._.length) return help()
+if(argv.version) return version()
 
-    delStream.end()
-  })
-c
-  .command('ls')
-  .description('list all items')
-  .action(function Tik$ls() {
-    new Tik({db: c.database}).listAll()
-      .pipe(appendage({ after: '\n' }))
-      .pipe(process.stdout)
-   })
-c
-  .command('lskeys')
-  .description('list all keys')
-  .action(function Tik$lskeys() {
-    new Tik({db: c.database}).keyStream()
-      .pipe(appendage({after: '\n'}))
-      .pipe(process.stdout)
-  })
-c
-  .command('*')
-  .action(function Tik$default(stuff) {
-    if(c.args.length === 2) {
-      var read = new Tik({db: c.database}).readStream()
-        , rs = stream.Readable()
+var home = path.normalize(process.env.HOME || process.env.USERPROFILE)
+var tikDir = path.join(home, '.tik')
 
-      rs.push(c.args[0])
-      rs.push(null)
+try {
+  fs.mkdirSync(tikDir)
+} catch(e) {
+}
 
-      rs.pipe(read).pipe(appendage({after: '\n'})).pipe(process.stdout)
-    } else {
-      c.args.pop()
+tik(level(argv.database || path.join(tikDir, 'db')), argv._)
+  .pipe(process.stdout)
 
-      var keyName = c.args.shift()
+function version() {
+  console.log(color.yellow('tik version ' + package.version))
+}
 
-      var keyValue = c.args.join(' ')
-        , write
-    
-      write = new Tik({db: c.database}).writeStream()
+function help() {
+  version()
 
-      write.write({key: keyName, value: keyValue})
-      write.end()
-    }
-  })
-
-c.parse(process.argv)
-if (!c.args.length) c.help()
+  fs.createReadStream(path.join(__dirname, '..', 'help.txt'))
+    .pipe(process.stderr)
+}

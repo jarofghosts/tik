@@ -1,69 +1,101 @@
-var path = require('path')
-  , fs = require('fs')
+var Readable = require('stream').Readable
 
-var color = require('bash-color')
+var appendage = require('appendage')
+  , color = require('bash-color')
   , through = require('through')
-  , levelup = require('levelup')
-
-var dir = path.resolve(process.env.HOME || process.env.USERPROFILE, '.tik')
-
-try {
-  fs.mkdirSync(dir)
-} catch (e) {
-}
 
 module.exports = createTik
 
-function Tik(settings) {
-  this.settings = settings || {}
-  this.settings.db = this.settings.db || path.join(dir, 'db')
-  this.db = levelup(path.normalize(this.settings.db))
+function Tik(db, args) {
+  if(!args) throw new Error('Must provide arguments to parse')
 
-  return this
+  Readable.call(this)
+
+  this.db = db
+
+  this.parse(args)
 }
 
-Tik.prototype.listAll = function Tik$listAll() {
-  var stream = through(format)
+Tik.prototype = Object.create(Readable.prototype)
 
-  this.db.createReadStream().pipe(stream)
+Tik.prototype._read = Function()
 
-  return stream
+Tik.prototype.parse = function parse(args) {
+  var self = this
 
-  function format(data) {
-    if(!data.key || !data.value) return
+  var router = {
+      rm: self.remove
+    , ls: self.list
+    , set: self.set
+    , get: self.get
+  }
 
-    stream.queue(color.green(data.key + ':') + ' ' + data.value)
+  var route = router[args[0]]
+
+  if(!route) return interpretArgs.apply(null, args)
+
+  route.apply(self, args.slice(1))
+
+  function interpretArgs(key, value) {
+    if(!value) return self.get(key)
+
+    self.set(key, value)
   }
 }
 
-Tik.prototype.keyStream = function Tik$keyStream() {
-  return this.db.createKeyStream()
-}
+Tik.prototype.remove = function remove() {
+  var keys = [].slice.call(arguments)
+    , self = this
 
-Tik.prototype.readStream = function Tik$readStream() {
-  var stream = through(write, Function())
-    , db = this.db
+  self.db.batch(keys.map(toDeletes), outputResult)
 
-  return stream
+  function outputResult(err) {
+    if(err) return self.emit('error', err)
 
-  function write(buf) {
-    var key_name = buf.toString()
-
-    db.get(key_name, function(err, data) {
-      if(err) stream.queue(null)
-      if(data) stream.queue(data)
-    })
+    self.push('Removed ' + keys.length + ' object' +
+      (keys.length === 1 ? '' : 's') + '\n')
   }
 }
 
-Tik.prototype.writeStream = function Tik$writeStream() {
-  return this.db.createWriteStream({type: 'put'})
+function toDeletes(x) {
+  return {type: 'del', key: x}
 }
 
-Tik.prototype.deleteStream = function Tik$deleteStream() {
-  return this.db.createWriteStream({type: 'del'})
+Tik.prototype.get = function get(key) {
+  var self = this
+
+  this.db.get(key, function(err, value) {
+    if(err) {
+      if(err.name === 'NotFoundError') {
+        return self.push(color.red('No such key "' + key + '"\n'))
+      }
+
+      return self.emit('error', err)
+    }
+
+    self.push(value + '\n')
+  })
 }
 
-function createTik(settings) {
-  return new Tik(settings)
+Tik.prototype.set = function set(key, value) {
+  this.db.put(key, value, this.get.bind(this, key))
+}
+
+Tik.prototype.list = function list() {
+  var formatStream = through(format)
+
+  this.db.createReadStream()
+    .pipe(formatStream)
+    .pipe(appendage({after: '\n'}))
+    .on('data', this.push.bind(this))
+
+  function format(obj) {
+    if(!obj.key || !obj.value) return
+
+    formatStream.queue(color.green(obj.key + ':') + ' ' + obj.value)
+  }
+}
+
+function createTik(db, args) {
+  return new Tik(db, args)
 }
