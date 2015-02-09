@@ -1,0 +1,9 @@
+Usage: tik [options] <key> [newvalue]
+
+--database, -d <dir> - Use LevelDB from <dir> instead of default.
+
+Subcommands:
+
+tik ls - list all keys and values
+tik lskeys - list all keys
+tik rm <key> [key2 ..] - remove key(s) from db
